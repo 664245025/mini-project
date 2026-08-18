@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 # ⚙️ ส่วนตั้งค่า (แก้ไขข้อมูลตรงนี้)
 # ==========================================
 DEV_NAME = "นายพีรพัฒน์ กองบุตร"
-DEV_ROLE = "นักศึกษา / Developer"
-DEV_INSTITUTION = "มหาวิทยาลัย ABC"
-DEV_GITHUB = "https://github.com/yourusername"
+DEV_ROLE = "664245025"
+DEV_INSTITUTION = "มหาวิทยาลัยราชภัฏนครปฐม"
+DEV_GITHUB = "https://github.com/664245025"
 # ==========================================
 
 st.set_page_config(page_title="Wildfire Prediction", page_icon="", layout="wide")
@@ -96,7 +96,7 @@ st.markdown("---")
 st.subheader("👨‍💻 ผู้พัฒนา (Developer)")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-image_path = os.path.join(BASE_DIR, 'images', 'developer.jpg')
+image_path = os.path.join(BASE_DIR, 'images', 'mark.jpg')
 
 st.markdown("""
 <style>
