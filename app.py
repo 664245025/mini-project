@@ -1,8 +1,3 @@
-# ============================================
-# Wildfire Prediction System - Complete App
-# ============================================
-
-# ========== 1. IMPORTS ==========
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -10,6 +5,13 @@ import joblib
 import json
 import os
 import matplotlib.pyplot as plt
+
+# ========== ข้อมูลผู้พัฒนา (ต้องใส่ตรงนี้) ==========
+DEV_NAME = "สมชาย ใจดี"
+DEV_ROLE = "นักศึกษา / Data Science"
+DEV_INSTITUTION = "มหาวิทยาลัย ABC"
+DEV_GITHUB = "https://github.com/somchai-dev"
+# ====================================================
 
 # ========== 2. CONFIGURATION (ข้อมูลผู้พัฒนา) ==========
 # ⚠️ แก้ไขข้อมูลส่วนตัวตรงนี้
