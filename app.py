@@ -1,23 +1,28 @@
-# app.py
+# app.py - Wildfire Prediction System
+# แก้ไขปัญหา NameError โดยย้าย import ไปด้านบนสุด
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
 import json
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Page config
 st.set_page_config(
-    page_title=" Wildfire Prediction",
+    page_title="Wildfire Prediction",
     page_icon="🔥",
     layout="wide"
 )
 
 # Title
-st.title("🔥 Wildfire Prediction System")
+st.title(" Wildfire Prediction System")
 st.markdown("---")
 
 # Sidebar for input
-st.sidebar.header("Input Parameters")
+st.sidebar.header(" Input Parameters")
 
 def user_input_features():
     X = st.sidebar.slider('X Coordinate', 1, 9, 5)
@@ -47,18 +52,36 @@ input_df = user_input_features()
 st.subheader("📋 Input Parameters")
 st.write(input_df)
 
-# Load model
+# Load model with proper path handling
 @st.cache_resource
 def load_model():
-    model = joblib.load('best_model_joblib.pkl')
-    scaler = joblib.load('scaler.pkl')
-    return model, scaler
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    
+    model_path = os.path.join(BASE_DIR, 'best_model_joblib.pkl')
+    scaler_path = os.path.join(BASE_DIR, 'scaler.pkl')
+    features_path = os.path.join(BASE_DIR, 'features.json')
+    
+    # ตรวจสอบไฟล์
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file not found: {model_path}")
+    if not os.path.exists(scaler_path):
+        raise FileNotFoundError(f"Scaler file not found: {scaler_path}")
+    
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+    
+    features = None
+    if os.path.exists(features_path):
+        with open(features_path, 'r') as f:
+            features = json.load(f)
+    
+    return model, scaler, features
 
 try:
-    model, scaler = load_model()
+    model, scaler, features = load_model()
     
     # Prediction
-    st.subheader(" Prediction Result")
+    st.subheader("🎯 Prediction Result")
     
     if st.button("🔮 Predict Burned Area", type="primary"):
         # Scale input
@@ -68,28 +91,23 @@ try:
         prediction_log = model.predict(input_scaled)
         prediction = np.expm1(prediction_log[0])  # inverse log
         
-        # Display
+        # Display metrics
         col1, col2, col3 = st.columns(3)
         
         with col1:
             st.metric("Predicted Area (hectares)", f"{prediction:.4f}")
         
         with col2:
-            # Risk level
             if prediction == 0:
-                risk = "No Fire"
-                color = "🟢"
+                risk = "No Fire 🟢"
             elif prediction < 1:
-                risk = "Low Risk"
-                color = ""
+                risk = "Low Risk 🟡"
             elif prediction < 10:
-                risk = "Medium Risk"
-                color = "🟠"
+                risk = "Medium Risk 🟠"
             else:
-                risk = "High Risk"
-                color = ""
+                risk = "High Risk 🔴"
             
-            st.metric("Risk Level", f"{color} {risk}")
+            st.metric("Risk Level", risk)
         
         with col3:
             st.metric("Log(Area+1)", f"{prediction_log[0]:.4f}")
@@ -99,38 +117,39 @@ try:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("### 📊 Predicted Area")
-            fig, ax = plt.subplots()
-            categories = ['Predicted Area']
-            values = [prediction]
-            ax.bar(categories, values, color='orange', edgecolor='black')
+            st.markdown("###  Predicted Area")
+            # สร้างกราฟ - plt ถูก import แล้วด้านบนสุด
+            fig, ax = plt.subplots(figsize=(6, 4))
+            ax.bar(['Predicted Area'], [prediction], color='orange', edgecolor='black')
             ax.set_ylabel('Area (hectares)')
             ax.set_title('Predicted Burned Area')
-            plt.xticks(rotation=45)
+            plt.tight_layout()
             st.pyplot(fig)
+            plt.close(fig)  # ปิด figure เพื่อประหยัด memory
         
         with col2:
-            st.markdown("### 🎯 Feature Importance")
-            if hasattr(model, 'feature_importances_'):
-                with open('features.json', 'r') as f:
-                    features = json.load(f)
-                
+            if features and hasattr(model, 'feature_importances_'):
+                st.markdown("### 🎯 Feature Importance")
                 importance_df = pd.DataFrame({
                     'Feature': features,
                     'Importance': model.feature_importances_
                 }).sort_values('Importance', ascending=True)
                 
-                fig, ax = plt.subplots()
+                fig, ax = plt.subplots(figsize=(6, 4))
                 ax.barh(importance_df['Feature'], importance_df['Importance'], 
                        color='steelblue', edgecolor='black')
                 ax.set_xlabel('Importance')
                 ax.set_title('Feature Importance')
                 plt.tight_layout()
                 st.pyplot(fig)
+                plt.close(fig)  # ปิด figure
 
-except FileNotFoundError:
-    st.error("❌ Model files not found! Please train and save the model first.")
-    st.info(" Run the training notebook to generate model files.")
+except FileNotFoundError as e:
+    st.error(f"❌ {str(e)}")
+    st.info("💡 กรุณาตรวจสอบว่าไฟล์โมเดลถูกอัพโหลดขึ้น GitHub แล้ว")
+except Exception as e:
+    st.error(f"❌ เกิดข้อผิดพลาด: {str(e)}")
+    st.exception(e)  # แสดง traceback เต็มๆ
 
 # Information
 st.markdown("---")
@@ -138,11 +157,6 @@ st.subheader("ℹ️ About This System")
 st.markdown("""
 **Model:** Random Forest Regressor with Hyperparameter Tuning  
 **Dataset:** UCI Forest Fires Dataset  
-**Metrics:** 
-- MAE (Mean Absolute Error)
-- RMSE (Root Mean Square Error)  
-- R² Score
-
 **Features Used:**
 - Spatial coordinates (X, Y)
 - Temporal features (month, day)
