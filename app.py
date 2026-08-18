@@ -132,9 +132,6 @@ with tc[2]: st.markdown("**📊 Viz**\n- Matplotlib\n- Seaborn")
 with tc[3]: st.markdown("** Web**\n- Streamlit\n- GitHub")
 
 st.subheader("📞 ช่องทางติดต่อ")
-cc = st.columns(2)
-with cc[0]: st.markdown(f'<div class="info-box"><h4>💻 GitHub</h4><p><a href="{DEV_GITHUB}" target="_blank" style="color: #667eea;">{DEV_GITHUB}</a></p></div>', unsafe_allow_html=True)
-with cc[1]: st.markdown('<div class="info-box"><h4>📚 Dataset</h4><p><a href="https://archive.ics.uci.edu/dataset/162/forest+fires" target="_blank" style="color: #667eea;">UCI Forest Fires</a></p></div>', unsafe_allow_html=True)
-
+st.markdown(f'<div class="info-box"><h4>💻 GitHub</h4><p><a href="{DEV_GITHUB}" target="_blank" style="color: #667eea;">{DEV_GITHUB}</a></p></div>', unsafe_allow_html=True)
 st.markdown("---")
 st.markdown(f'<div style="text-align: center; color: #888; font-size: 0.9em;"><p>© 2026 {DEV_NAME}. All rights reserved. | Developed with ❤️ using Streamlit</p></div>', unsafe_allow_html=True)
