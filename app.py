@@ -21,7 +21,7 @@ st.title("🔥 Wildfire Prediction System")
 st.markdown("---")
 
 # --- Sidebar Input ---
-st.sidebar.header("📊 Input Parameters")
+st.sidebar.header(" Input Parameters")
 def user_input_features():
     X = st.sidebar.slider('X Coordinate', 1, 9, 5)
     Y = st.sidebar.slider('Y Coordinate', 2, 9, 5)
@@ -57,7 +57,7 @@ def load_model():
 try:
     model, scaler, features = load_model()
     
-    # ปุ่มกดทำนาย (สีแดงตามรูป)
+    # ปุ่มกดทำนาย (สีแดงเด่นชัด)
     predict_clicked = st.button("🔮 Predict Burned Area", type="primary", use_container_width=True)
     
     if predict_clicked:
@@ -66,9 +66,10 @@ try:
         prediction_log = model.predict(input_scaled)
         prediction = np.expm1(prediction_log[0])
         
-        # เก็บค่าลงใน Session State เพื่อให้แน่ใจว่ากราฟใช้ค่าเดียวกัน
+        # เก็บค่าลงใน Session State
         st.session_state['prediction'] = prediction
         st.session_state['prediction_log'] = prediction_log[0]
+        st.session_state['input_scaled'] = input_scaled
         
         # 2. แสดงผล Metric ทั้ง 3 อันพร้อมกัน
         st.subheader("🎯 Prediction Result")
@@ -103,17 +104,24 @@ try:
         
         with col2:
             if features and hasattr(model, 'feature_importances_'):
-                st.markdown("### 🎯 Feature Importance")
-                importance_df = pd.DataFrame({
+                st.markdown("### 🎯 Local Feature Importance")
+                st.caption("ความสำคัญของตัวแปร对本次การทำนายนี้ (เปลี่ยนตามข้อมูลที่กรอก)")
+                
+                # คำนวณ Local Importance แบบง่าย (Input * Global Importance)
+                local_imp = np.abs(input_scaled[0] * model.feature_importances_)
+                
+                local_df = pd.DataFrame({
                     'Feature': features,
-                    'Importance': model.feature_importances_
+                    'Importance': local_imp
                 }).sort_values('Importance', ascending=True)
                 
                 fig, ax = plt.subplots(figsize=(6, 4))
-                ax.barh(importance_df['Feature'], importance_df['Importance'], 
-                       color='steelblue', edgecolor='black')
-                ax.set_xlabel('Importance')
-                ax.set_title('Feature Importance')
+                # ใช้สีไล่ระดับจากเขียว(ต่ำ) -> เหลือง -> แดง(สูง)
+                colors = plt.cm.RdYlGn_r(np.linspace(0.2, 0.8, len(local_df)))
+                bars = ax.barh(local_df['Feature'], local_df['Importance'], 
+                              color=colors, edgecolor='black', linewidth=0.5)
+                ax.set_xlabel('Local Impact Score')
+                ax.set_title('Feature Importance for This Prediction')
                 plt.tight_layout()
                 st.pyplot(fig)
                 plt.close(fig)
@@ -124,7 +132,7 @@ except FileNotFoundError as e:
     st.error(f"❌ {str(e)}")
     st.info("💡 กรุณาตรวจสอบว่าไฟล์โมเดลถูกอัพโหลดขึ้น GitHub แล้ว")
 except Exception as e:
-    st.error(f"❌ เกิดข้อผิดพลาด: {str(e)}")
+    st.error(f" เกิดข้อผิดพลาด: {str(e)}")
 
 # --- Developer Section ---
 st.markdown("---")
