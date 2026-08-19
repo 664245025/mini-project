@@ -17,7 +17,7 @@ DEV_GITHUB = "https://github.com/664245025"
 
 st.set_page_config(page_title="Wildfire Prediction", page_icon="", layout="wide")
 
-st.title(" Wildfire Prediction System")
+st.title(" การพัฒนาระบบทำนายพื้นที่เกิดไฟป่าด้วย Machine Learning")
 st.markdown("---")
 
 # --- Sidebar ---
