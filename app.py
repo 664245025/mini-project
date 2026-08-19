@@ -9,19 +9,19 @@ import matplotlib.pyplot as plt
 # ==========================================
 # ⚙️ ส่วนตั้งค่า (แก้ไขข้อมูลตรงนี้)
 # ==========================================
-DEV_NAME = "สมชาย ใจดี"
-DEV_ROLE = "นักศึกษา / Developer"
-DEV_INSTITUTION = "มหาวิทยาลัย ABC"
-DEV_GITHUB = "https://github.com/yourusername"
+DEV_NAME = "นายพีรพัฒน์ กองบุตร"
+DEV_ROLE = "664245025"
+DEV_INSTITUTION = "มหาวิทยาลัยราชภัฏนครปฐม"
+DEV_GITHUB = "https://github.com/664245025"
 # ==========================================
 
-st.set_page_config(page_title="Wildfire Prediction", page_icon="🔥", layout="wide")
+st.set_page_config(page_title="Wildfire Prediction", page_icon="", layout="wide")
 
-st.title("🔥 Wildfire Prediction System")
+st.title(" การพัฒนาระบบทำนายพื้นที่เกิดไฟป่าด้วย Machine Learning")
 st.markdown("---")
 
-# --- Sidebar Input ---
-st.sidebar.header(" Input Parameters")
+# --- Sidebar ---
+st.sidebar.header("📊 Input Parameters")
 def user_input_features():
     X = st.sidebar.slider('X Coordinate', 1, 9, 5)
     Y = st.sidebar.slider('Y Coordinate', 2, 9, 5)
@@ -53,75 +53,50 @@ def load_model():
     features = json.load(open(features_path, 'r')) if os.path.exists(features_path) else None
     return model, scaler, features
 
-# --- Real-time Prediction & Visualization ---
+# --- Prediction ---
 try:
     model, scaler, features = load_model()
-    
-    # คำนวณทำนายทันทีเมื่อ Input เปลี่ยน
-    input_scaled = scaler.transform(input_df)
-    prediction_log = model.predict(input_scaled)
-    prediction = np.expm1(prediction_log[0])
-    
-    # แสดงผล Metric
     st.subheader("🎯 Prediction Result")
-    col1, col2, col3 = st.columns(3)
-    
-    with col1: 
-        st.metric("Predicted Area (ha)", f"{prediction:.4f}")
-    
-    with col2:
-        if prediction == 0: risk = "No Fire "
-        elif prediction < 1: risk = "Low Risk 🟡"
-        elif prediction < 10: risk = "Medium Risk "
-        else: risk = "High Risk "
-        st.metric("Risk Level", risk)
+    if st.button("🔮 Predict Burned Area", type="primary"):
+        input_scaled = scaler.transform(input_df)
+        prediction_log = model.predict(input_scaled)
+        prediction = np.expm1(prediction_log[0])
         
-    with col3: 
-        st.metric("Log(Area+1)", f"{prediction_log[0]:.4f}")
-    
-    # วาดกราฟแบบ Real-time
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### 📊 Predicted Area")
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.bar(['Predicted Area'], [prediction], color='orange', edgecolor='black')
-        ax.set_ylabel('Area (hectares)')
-        ax.set_title('Predicted Burned Area')
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-    
-    with col2:
-        if features and hasattr(model, 'feature_importances_'):
-            st.markdown("###  Feature Importance")
-            importance_df = pd.DataFrame({
-                'Feature': features,
-                'Importance': model.feature_importances_
-            }).sort_values('Importance', ascending=True)
-            
+        col1, col2, col3 = st.columns(3)
+        with col1: st.metric("Predicted Area (ha)", f"{prediction:.4f}")
+        with col2:
+            risk = "No Fire 🟢" if prediction == 0 else "Low Risk 🟡" if prediction < 1 else "Medium Risk 🟠" if prediction < 10 else "High Risk 🔴"
+            st.metric("Risk Level", risk)
+        with col3: st.metric("Log(Area+1)", f"{prediction_log[0]:.4f}")
+        
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("###  Predicted Area")
             fig, ax = plt.subplots(figsize=(6, 4))
-            ax.barh(importance_df['Feature'], importance_df['Importance'], 
-                   color='steelblue', edgecolor='black')
-            ax.set_xlabel('Importance')
-            ax.set_title('Feature Importance')
+            ax.bar(['Predicted Area'], [prediction], color='orange', edgecolor='black')
+            ax.set_ylabel('Area (hectares)')
             plt.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
-
-except FileNotFoundError as e:
-    st.error(f"❌ {str(e)}")
-    st.info("💡 กรุณาตรวจสอบว่าไฟล์โมเดลถูกอัพโหลดขึ้น GitHub แล้ว")
+        with col2:
+            if features and hasattr(model, 'feature_importances_'):
+                st.markdown("### 🎯 Feature Importance")
+                imp_df = pd.DataFrame({'Feature': features, 'Importance': model.feature_importances_}).sort_values('Importance', ascending=True)
+                fig, ax = plt.subplots(figsize=(6, 4))
+                ax.barh(imp_df['Feature'], imp_df['Importance'], color='steelblue')
+                plt.tight_layout()
+                st.pyplot(fig)
+                plt.close(fig)
 except Exception as e:
     st.error(f"❌ เกิดข้อผิดพลาด: {str(e)}")
 
-# --- Developer Section ---
+# --- Developer Section (ไม่มีอีเมลแล้ว) ---
 st.markdown("---")
 st.subheader("👨‍💻 ผู้พัฒนา (Developer)")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-image_path = os.path.join(BASE_DIR, 'images', 'developer.jpg')
+image_path = os.path.join(BASE_DIR, 'images', 'mark.jpg')
 
 st.markdown("""
 <style>
@@ -135,7 +110,7 @@ with col_img:
     if os.path.exists(image_path):
         st.image(image_path, caption=f"👤 {DEV_NAME}", width=200)
     else:
-        st.markdown("<div style='font-size: 100px; text-align: center;'>‍💻</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size: 100px; text-align: center;'>👨💻</div>", unsafe_allow_html=True)
 
 with col_info:
     st.markdown(f"""
@@ -149,15 +124,14 @@ with col_info:
 
 st.markdown('<div class="info-box"><h4>🔥 Wildfire Prediction System</h4><p>โปรเจคนี้พัฒนาขึ้นเพื่อทำนายพื้นที่ที่ถูกไฟป่าโดยใช้ Machine Learning จาก UCI Forest Fires Dataset</p></div>', unsafe_allow_html=True)
 
-st.subheader("️ เทคโนโลยีที่ใช้")
+st.subheader("🛠️ เทคโนโลยีที่ใช้")
 tc = st.columns(4)
 with tc[0]: st.markdown("**🐍 Programming**\n- Python\n- Pandas\n- NumPy")
-with tc[1]: st.markdown("**🤖 ML**\n- Scikit-Learn\n- XGBoost\n- Joblib")
+with tc[1]: st.markdown("** ML**\n- Scikit-Learn\n- XGBoost\n- Joblib")
 with tc[2]: st.markdown("**📊 Viz**\n- Matplotlib\n- Seaborn")
-with tc[3]: st.markdown("**🌐 Web**\n- Streamlit\n- GitHub")
+with tc[3]: st.markdown("** Web**\n- Streamlit\n- GitHub")
 
 st.subheader("📞 ช่องทางติดต่อ")
-st.markdown(f'<div class="info-box"><h4> GitHub</h4><p><a href="{DEV_GITHUB}" target="_blank" style="color: #667eea;">{DEV_GITHUB}</a></p></div>', unsafe_allow_html=True)
-
+st.markdown(f'<div class="info-box"><h4>💻 GitHub</h4><p><a href="{DEV_GITHUB}" target="_blank" style="color: #667eea;">{DEV_GITHUB}</a></p></div>', unsafe_allow_html=True)
 st.markdown("---")
 st.markdown(f'<div style="text-align: center; color: #888; font-size: 0.9em;"><p>© 2026 {DEV_NAME}. All rights reserved. | Developed with ❤️ using Streamlit</p></div>', unsafe_allow_html=True)
