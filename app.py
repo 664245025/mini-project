@@ -9,16 +9,15 @@ import matplotlib.pyplot as plt
 # ==========================================
 # ⚙️ ส่วนตั้งค่า (แก้ไขข้อมูลตรงนี้)
 # ==========================================
-dev_name = "นาพีรพัฒน์ กองบุตร"
-dev_role = "ผู้พัฒนา"
-dev_institution = "มหาวิทยาลัยราชภัฏนครปฐม"
-dev_github = "https://github.com/664245025"
-
+DEV_NAME = "นาพีรพัฒน์ กองบุตร"
+DEV_ROLE = "ผู้พัฒนา"
+DEV_INSTITUTION = "มหาวิทยาลัยราชภัฏนครปฐม"
+DEV_GITHUB = "https://github.com/664245025"
 # ==========================================
 
 st.set_page_config(page_title="Wildfire Prediction", page_icon="🔥", layout="wide")
 
-st.title("🔥 การพัฒนาระบบทำนายพื้นที่เกิดไฟป่าด้วย Machine Learning")
+st.title("🔥  การพัฒนาระบบทำนายพื้นที่เกิดไฟป่าด้วย Machine Learning")
 st.markdown("---")
 
 # --- Sidebar Input ---
