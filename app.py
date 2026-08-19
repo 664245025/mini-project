@@ -53,62 +53,72 @@ def load_model():
     features = json.load(open(features_path, 'r')) if os.path.exists(features_path) else None
     return model, scaler, features
 
-# --- Real-time Prediction & Visualization (แก้ไขส่วนนี้) ---
+# --- Prediction Logic with Button ---
 try:
     model, scaler, features = load_model()
     
-    # 1. คำนวณทำนายทันทีเมื่อ Input เปลี่ยน (ไม่ต้องกดปุ่ม)
-    input_scaled = scaler.transform(input_df)
-    prediction_log = model.predict(input_scaled)
-    prediction = np.expm1(prediction_log[0])
+    # ปุ่มกดทำนาย (สีแดงตามรูป)
+    predict_clicked = st.button("🔮 Predict Burned Area", type="primary", use_container_width=True)
     
-    # 2. แสดงผล Metric ทันที
-    st.subheader("🎯 Prediction Result")
-    col1, col2, col3 = st.columns(3)
-    
-    with col1: 
-        st.metric("Predicted Area (ha)", f"{prediction:.4f}")
-    
-    with col2:
-        if prediction == 0: risk = "No Fire 🟢"
-        elif prediction < 1: risk = "Low Risk 🟡"
-        elif prediction < 10: risk = "Medium Risk 🟠"
-        else: risk = "High Risk 🔴"
-        st.metric("Risk Level", risk)
+    if predict_clicked:
+        # 1. คำนวณใหม่ทุกครั้งที่กดปุ่ม
+        input_scaled = scaler.transform(input_df)
+        prediction_log = model.predict(input_scaled)
+        prediction = np.expm1(prediction_log[0])
         
-    with col3: 
-        st.metric("Log(Area+1)", f"{prediction_log[0]:.4f}")
-    
-    # 3. วาดกราฟแบบ Real-time
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### 📊 Predicted Area")
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.bar(['Predicted Area'], [prediction], color='orange', edgecolor='black')
-        ax.set_ylabel('Area (hectares)')
-        ax.set_title('Predicted Burned Area')
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
-    
-    with col2:
-        if features and hasattr(model, 'feature_importances_'):
-            st.markdown("### 🎯 Feature Importance")
-            importance_df = pd.DataFrame({
-                'Feature': features,
-                'Importance': model.feature_importances_
-            }).sort_values('Importance', ascending=True)
+        # เก็บค่าลงใน Session State เพื่อให้แน่ใจว่ากราฟใช้ค่าเดียวกัน
+        st.session_state['prediction'] = prediction
+        st.session_state['prediction_log'] = prediction_log[0]
+        
+        # 2. แสดงผล Metric ทั้ง 3 อันพร้อมกัน
+        st.subheader("🎯 Prediction Result")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1: 
+            st.metric("Predicted Area (ha)", f"{prediction:.4f}")
+        
+        with col2:
+            if prediction == 0: risk = "No Fire "
+            elif prediction < 1: risk = "Low Risk 🟡"
+            elif prediction < 10: risk = "Medium Risk "
+            else: risk = "High Risk "
+            st.metric("Risk Level", risk)
             
+        with col3: 
+            st.metric("Log(Area+1)", f"{prediction_log[0]:.4f}")
+        
+        # 3. วาดกราฟทั้ง 2 อันพร้อมกัน
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("### 📊 Predicted Area")
             fig, ax = plt.subplots(figsize=(6, 4))
-            ax.barh(importance_df['Feature'], importance_df['Importance'], 
-                   color='steelblue', edgecolor='black')
-            ax.set_xlabel('Importance')
-            ax.set_title('Feature Importance')
+            ax.bar(['Predicted Area'], [prediction], color='orange', edgecolor='black')
+            ax.set_ylabel('Area (hectares)')
+            ax.set_title('Predicted Burned Area')
             plt.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
+        
+        with col2:
+            if features and hasattr(model, 'feature_importances_'):
+                st.markdown("### 🎯 Feature Importance")
+                importance_df = pd.DataFrame({
+                    'Feature': features,
+                    'Importance': model.feature_importances_
+                }).sort_values('Importance', ascending=True)
+                
+                fig, ax = plt.subplots(figsize=(6, 4))
+                ax.barh(importance_df['Feature'], importance_df['Importance'], 
+                       color='steelblue', edgecolor='black')
+                ax.set_xlabel('Importance')
+                ax.set_title('Feature Importance')
+                plt.tight_layout()
+                st.pyplot(fig)
+                plt.close(fig)
+    else:
+        st.info("👈 เลื่อนค่าพารามิเตอร์ด้านซ้าย แล้วกดปุ่มเพื่อทำนายผล")
 
 except FileNotFoundError as e:
     st.error(f"❌ {str(e)}")
@@ -135,7 +145,7 @@ with col_img:
     if os.path.exists(image_path):
         st.image(image_path, caption=f"👤 {DEV_NAME}", width=200)
     else:
-        st.markdown("<div style='font-size: 100px; text-align: center;'>👨‍💻</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size: 100px; text-align: center;'>👨💻</div>", unsafe_allow_html=True)
 
 with col_info:
     st.markdown(f"""
